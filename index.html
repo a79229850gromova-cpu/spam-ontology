@@ -7,41 +7,107 @@
   <style>
     * { box-sizing: border-box; }
     body, html {
-      margin: 0; padding: 0; width: 100%; height: 100%;
-      background: #faf8f5; font-family: Georgia, serif; overflow: hidden;
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at top left, #fdfbf7 0%, #f3efe6 100%);
+      font-family: 'Georgia', 'Times New Roman', serif;
+      overflow: hidden;
     }
-    #cy { width: 100%; height: 100%; }
+    #cy {
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+    }
+    #cy:active {
+      cursor: grabbing;
+    }
     #info-panel {
-      position: absolute; top: 20px; left: 20px; width: 320px;
-      background: rgba(255, 253, 249, 0.96);
-      border: 1.5px solid #5c6b73; border-radius: 10px;
-      padding: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-      color: #1f2421; z-index: 10;
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 340px;
+      background: rgba(255, 253, 249, 0.94);
+      backdrop-filter: blur(8px);
+      border: 1.5px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 18px 20px;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+      color: #1e293b;
+      z-index: 10;
+      transition: all 0.25s ease;
     }
-    #info-panel h3 { margin: 0 0 8px 0; font-size: 16px; color: #1d3557; }
-    #info-panel p { margin: 0 0 12px 0; font-size: 13px; line-height: 1.45; }
-    .controls { display: flex; gap: 8px; }
-    button {
-      background: #1d3557; color: #faf8f5; border: none;
-      padding: 6px 12px; border-radius: 6px; cursor: pointer;
-      font-family: inherit; font-size: 12px;
-    }
-    button:hover { background: #2b4c7e; }
     .badge {
-      display: inline-block; padding: 2px 8px; border-radius: 4px;
-      font-size: 11px; background: #e9e2d0; margin-bottom: 8px;
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 0.3px;
+      background: #e2e8f0;
+      color: #1e3a8a;
+      margin-bottom: 10px;
+    }
+    #info-panel h3 {
+      margin: 0 0 8px 0;
+      font-size: 16px;
+      line-height: 1.3;
+      color: #0f172a;
+    }
+    #info-panel p {
+      margin: 0 0 14px 0;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #475569;
+    }
+    .hint {
+      font-size: 11px;
+      color: #64748b;
+      margin-bottom: 12px;
+      padding-top: 8px;
+      border-top: 1px solid #e2e8f0;
+    }
+    .controls {
+      display: flex;
+      gap: 8px;
+    }
+    button {
+      background: #1e3a8a;
+      color: #ffffff;
+      border: none;
+      padding: 7px 13px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 12px;
+      transition: background 0.2s ease, transform 0.1s ease;
+    }
+    button:hover {
+      background: #1d4ed8;
+    }
+    button:active {
+      transform: scale(0.98);
+    }
+    button.secondary {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+    button.secondary:hover {
+      background: #cbd5e1;
     }
   </style>
 </head>
 <body>
 
 <div id="info-panel">
-  <div class="badge" id="node-group">Интерактивная онтология</div>
-  <h3 id="node-title">Нажми на любой блок</h3>
-  <p id="node-desc">Кликни по элементу схемы, чтобы подсветить все связанные с ним каналы, атаки, инструменты и меры защиты. Пустое место — сброс выделения.</p>
+  <div class="badge" id="node-group">Онтология угроз и защиты</div>
+  <h3 id="node-title">Фейковые сообщения и спам</h3>
+  <p id="node-desc">Нажми на любой блок, чтобы подсветить все его связи. Любой элемент можно перетащить мышкой в сторону для удобного просмотра — структура связей при этом не нарушится.</p>
+  <div class="hint">• Клик по фону — сбросить подсветку<br>• Колёсико мыши — приблизить или отдалить</div>
   <div class="controls">
-    <button onclick="resetView()">Сбросить выделение</button>
-    <button onclick="cy.fit(null, 40)">Вся схема</button>
+    <button onclick="resetView()">Сбросить подсветку</button>
+    <button class="secondary" onclick="cy.fit(null, 45)">Вся схема</button>
   </div>
 </div>
 
@@ -49,72 +115,73 @@
 
 <script>
   const elements = [
-    // Корень и ветви
-    { data: { id: 'ROOT', label: 'ФЕЙКОВЫЕ СООБЩЕНИЯ И СПАМ', group: 'Корень онтологии', desc: 'Незапрошенная, поддельная или вредоносная электронная информация.', bg: '#1d3557', border: '#102138', color: '#faf8f5' } },
-    { data: { id: 'CHAR', label: '1. Сущностные характеристики\n(ITU-T)', group: 'Ветвь 1', desc: 'Базовые свойства, отличающие спам от легитимной коммуникации.', bg: '#e9e2d0', border: '#4a5568', color: '#1a202c' } },
-    { data: { id: 'CHAN', label: '2. Среды и каналы доставки\n(ITU-T, ФБР, ЦБ РФ)', group: 'Ветвь 2', desc: 'Транспортные среды доставки сообщений.', bg: '#e9e2d0', border: '#4a5568', color: '#1a202c' } },
-    { data: { id: 'TYPES', label: '3. Таксономия атак и схем\n(ФБР, GSMA, ЦБ РФ)', group: 'Ветвь 3', desc: 'Прикладные сценарии и сигнальные атаки.', bg: '#e9e2d0', border: '#4a5568', color: '#1a202c' } },
-    { data: { id: 'TECH', label: '4. Технические механизмы\n(ФБР, GSMA, ЦБ РФ)', group: 'Ветвь 4', desc: 'Инструментарий реализации и масштабирования атак.', bg: '#e9e2d0', border: '#4a5568', color: '#1a202c' } },
-    { data: { id: 'GOALS', label: '5. Цели и объекты воздействия\n(ФБР, ЦБ РФ, GSMA)', group: 'Ветвь 5', desc: 'Конечный ущерб и группы риска.', bg: '#e9e2d0', border: '#4a5568', color: '#1a202c' } },
-    { data: { id: 'DEF', label: '6. Меры выявления и защиты\n(ITU-T, GSMA, ЦБ РФ)', group: 'Ветвь 6', desc: 'Многоуровневая система противодействия.', bg: '#e9e2d0', border: '#4a5568', color: '#1a202c' } },
+    // Корень и 6 основных ветвей
+    { data: { id: 'ROOT', label: 'ФЕЙКОВЫЕ СООБЩЕНИЯ И СПАМ', group: 'Корень онтологии', desc: 'Незапрошенная, поддельная или вредоносная электронная информация, доставляемая пользователям и в сети связи.', bg: '#1e3a8a', border: '#172554', color: '#ffffff', size: '13px', pad: '14px' } },
+    
+    { data: { id: 'CHAR', label: '1. Сущностные характеристики\n(ITU-T)', group: 'Ветвь 1 • Свойства', desc: 'Базовые признаки, отличающие спам и фейковые сообщения от легитимной коммуникации.', bg: '#f1f5f9', border: '#475569', color: '#0f172a', size: '12px', pad: '12px' } },
+    { data: { id: 'CHAN', label: '2. Среды и каналы доставки\n(ITU-T, ФБР, Центральный банк)', group: 'Ветвь 2 • Каналы', desc: 'Транспортные среды и протоколы, через которые сообщения достигают жертвы.', bg: '#e0f2fe', border: '#0369a1', color: '#0c4a6e', size: '12px', pad: '12px' } },
+    { data: { id: 'TYPES', label: '3. Таксономия атак и схем\n(ФБР, GSMA, Центральный банк)', group: 'Ветвь 3 • Угрозы', desc: 'Классификация социально-инженерных сценариев и низкоуровневых сигнальных атак.', bg: '#ffe4e6', border: '#be123c', color: '#881337', size: '12px', pad: '12px' } },
+    { data: { id: 'TECH', label: '4. Технические механизмы\n(ФБР, GSMA, Центральный банк)', group: 'Ветвь 4 • Инструменты', desc: 'Технологическая база, обеспечивающая масштаб, скрытность и эффективность атак.', bg: '#fef3c7', border: '#b45309', color: '#78350f', size: '12px', pad: '12px' } },
+    { data: { id: 'GOALS', label: '5. Цели и объекты воздействия\n(ФБР, Центральный банк, GSMA)', group: 'Ветвь 5 • Цели и жертвы', desc: 'Конечный ущерб для пользователей и бизнеса, а также основные группы риска.', bg: '#f3e8ff', border: '#7e22ce', color: '#581c87', size: '12px', pad: '12px' } },
+    { data: { id: 'DEF', label: '6. Меры выявления и защиты\n(ITU-T, GSMA, Центральный банк)', group: 'Ветвь 6 • Противодействие', desc: 'Многоуровневая система технической, телекоммуникационной и банковской защиты.', bg: '#dcfce7', border: '#15803d', color: '#14532d', size: '12px', pad: '12px' } },
 
-    // 1. Характеристики
-    { data: { id: 'C1', label: 'Электронная форма и низкая стоимость', group: 'Характеристики', desc: 'Дешёвая передача в открытых сетях (Интернет).', bg: '#f4f1ea', border: '#8d99ae', color: '#2b2d42' } },
-    { data: { id: 'C2', label: 'Незапрошенный характер', group: 'Характеристики', desc: 'Реклама, мошенничество или вредоносный код без запроса получателя.', bg: '#f4f1ea', border: '#8d99ae', color: '#2b2d42' } },
-    { data: { id: 'C3', label: 'Массовость и повторяемость', group: 'Характеристики', desc: 'Рассылка в больших объёмах или многократные вызовы.', bg: '#f4f1ea', border: '#8d99ae', color: '#2b2d42' } },
-    { data: { id: 'C4', label: 'Использование адресов без согласия', group: 'Характеристики', desc: 'Сбор баз в сети или автоматическая генерация номеров.', bg: '#f4f1ea', border: '#8d99ae', color: '#2b2d42' } },
-    { data: { id: 'C5', label: 'Скрытый или поддельный источник', group: 'Характеристики', desc: 'Подмена заголовков или использование сторонних серверов.', bg: '#f4f1ea', border: '#8d99ae', color: '#2b2d42' } },
-    { data: { id: 'C6', label: 'Мультимодальность', group: 'Характеристики', desc: 'Одновременное воздействие через текст, аудио, графику и видео.', bg: '#f4f1ea', border: '#8d99ae', color: '#2b2d42' } },
+    // 1. Характеристики (Графитовая гамма)
+    { data: { id: 'C1', label: 'Электронная форма и низкая стоимость', group: '1. Сущностные характеристики', desc: 'Передача информации в открытых сетях обходится отправителю крайне дёшево.', bg: '#f8fafc', border: '#64748b', color: '#1e293b' } },
+    { data: { id: 'C2', label: 'Незапрошенный характер', group: '1. Сущностные характеристики', desc: 'Получатель не запрашивал информацию; содержит рекламу, обман или вирусы.', bg: '#f8fafc', border: '#64748b', color: '#1e293b' } },
+    { data: { id: 'C3', label: 'Массовость и повторяемость', group: '1. Сущностные характеристики', desc: 'Рассылка в огромных объёмах без разбора или многократные вызовы в реальном времени.', bg: '#f8fafc', border: '#64748b', color: '#1e293b' } },
+    { data: { id: 'C4', label: 'Использование адресов без согласия', group: '1. Сущностные характеристики', desc: 'Сбор контактных баз в сети или автоматическая генерация номеров перебором.', bg: '#f8fafc', border: '#64748b', color: '#1e293b' } },
+    { data: { id: 'C5', label: 'Скрытый или поддельный источник', group: '1. Сущностные характеристики', desc: 'Маскировка отправителя через подмену заголовков или сторонние серверы.', bg: '#f8fafc', border: '#64748b', color: '#1e293b' } },
+    { data: { id: 'C6', label: 'Мультимодальность', group: '1. Сущностные характеристики', desc: 'Одновременное воздействие через текст, графику, аудио, видео и тактильные сигналы.', bg: '#f8fafc', border: '#64748b', color: '#1e293b' } },
 
-    // 2. Каналы
-    { data: { id: 'CH_MAIL', label: 'E-mail (SMTP)', group: 'Каналы', desc: 'Эксплуатация уязвимостей протокола SMTP и подделка заголовков.', bg: '#e8f0f2', border: '#457b9d', color: '#1d3557' } },
-    { data: { id: 'CH_MOB', label: 'Мобильные сети (SMS / MMS / SS7)', group: 'Каналы', desc: 'Доставка через сервисные центры, сеть ОКС-7 и роуминг.', bg: '#e8f0f2', border: '#457b9d', color: '#1d3557' } },
-    { data: { id: 'CH_IP', label: 'IP-мультимедиа (SPIM / SPIT)', group: 'Каналы', desc: 'Мессенджеры (SPIM) и интернет-телефония VoIP (SPIT/VAM).', bg: '#e8f0f2', border: '#457b9d', color: '#1d3557' } },
-    { data: { id: 'CH_WEB', label: 'Веб и соцсети', group: 'Каналы', desc: 'Фишинговые сайты, фейковые приложения банков и группы в соцсетях.', bg: '#e8f0f2', border: '#457b9d', color: '#1d3557' } },
-    { data: { id: 'CH_OFF', label: 'Офлайн-триггеры (QR-посылки)', group: 'Каналы', desc: 'Незаказанные посылки с QR-кодами для перевода жертвы в онлайн-схему.', bg: '#e8f0f2', border: '#457b9d', color: '#1d3557' } },
+    // 2. Каналы доставки (Лазурно-сапфировая гамма)
+    { data: { id: 'CH_MAIL', label: 'E-mail (SMTP)', group: '2. Среды и каналы доставки', desc: 'Эксплуатация уязвимостей протокола SMTP: отсутствие обязательной аутентификации и подделка заголовков.', bg: '#f0f9ff', border: '#0284c7', color: '#0c4a6e' } },
+    { data: { id: 'CH_MOB', label: 'Мобильные сети (SMS / MMS / SS7)', group: '2. Среды и каналы доставки', desc: 'Доставка через сервисные центры, сигнальную сеть SS7 (ОКС-7) и роуминговые стыки.', bg: '#f0f9ff', border: '#0284c7', color: '#0c4a6e' } },
+    { data: { id: 'CH_IP', label: 'IP-мультимедиа (SPIM / SPIT)', group: '2. Среды и каналы доставки', desc: 'Мессенджеры (SPIM) и интернет-телефония VoIP (голосовой спам SPIT / VAM).', bg: '#f0f9ff', border: '#0284c7', color: '#0c4a6e' } },
+    { data: { id: 'CH_WEB', label: 'Веб и социальные сети', group: '2. Среды и каналы доставки', desc: 'Фишинговые сайты-копии, поддельные мобильные приложения банков и группы в соцсетях.', bg: '#f0f9ff', border: '#0284c7', color: '#0c4a6e' } },
+    { data: { id: 'CH_OFF', label: 'Офлайн-триггеры (QR-посылки)', group: '2. Среды и каналы доставки', desc: 'Рассылка незаказанных физических посылок с QR-кодами внутри для перевода в онлайн-схему.', bg: '#f0f9ff', border: '#0284c7', color: '#0c4a6e' } },
 
-    // 3. Таксономия атак
-    { data: { id: 'T_PHISH', label: 'Фишинг / Спуфинг', group: 'Атаки и схемы', desc: 'Маскировка под легитимные бренды и сервисы.', bg: '#f9eae7', border: '#9e2a2b', color: '#3d0c0e' } },
-    { data: { id: 'T_BEC', label: 'Компрометация деловой почты (BEC)', group: 'Атаки и схемы', desc: 'Подмена платёжных реквизитов от имени CEO, юристов или риелторов.', bg: '#f9eae7', border: '#9e2a2b', color: '#3d0c0e' } },
-    { data: { id: 'T_IMP', label: 'Имперсонация', group: 'Атаки и схемы', desc: 'Выдача себя за госорганы, ФБР/IC3, полицию или техподдержку.', bg: '#f9eae7', border: '#9e2a2b', color: '#3d0c0e' } },
-    { data: { id: 'T_INV', label: 'Инвестиционный и фин. фрод', group: 'Атаки и схемы', desc: 'Фейковые криптобиржи, торговля золотом, лжеброкеры и пирамиды-игры.', bg: '#f9eae7', border: '#9e2a2b', color: '#3d0c0e' } },
-    { data: { id: 'T_CB', label: 'Схема «Обратный звонок»', group: 'Атаки и схемы', desc: 'Звонок доставки → код SMS → фейк-робот → жертва сама звонит мошенникам.', bg: '#f9eae7', border: '#9e2a2b', color: '#3d0c0e' } },
-    { data: { id: 'T_SS7', label: 'Сигнальные SMS-атаки (SS7)', group: 'Атаки и схемы', desc: 'Атаки на уровне протоколов сигнализации сотовых сетей (GSMA).', bg: '#f9eae7', border: '#9e2a2b', color: '#3d0c0e' } },
-    { data: { id: 'SS7_FAKE', label: 'Faking (подмена узла/SMS-C)', group: 'SS7-атаки', desc: 'Подмена адреса SMS-C / SCCP / MAP на уровне сигнализации.', bg: '#f3e5e5', border: '#7f1d1d', color: '#3d0c0e' } },
-    { data: { id: 'SS7_SPOOF', label: 'Spoofing (подмена MSISDN)', group: 'SS7-атаки', desc: 'Подмена номера телефона отправителя при отправке SMS.', bg: '#f3e5e5', border: '#7f1d1d', color: '#3d0c0e' } },
-    { data: { id: 'SS7_OPEN', label: 'Open SMS-C', group: 'SS7-атаки', desc: 'Отправка сообщений через сторонние незащищённые SMS-центры.', bg: '#f3e5e5', border: '#7f1d1d', color: '#3d0c0e' } },
-    { data: { id: 'SS7_DOS', label: 'DoS-атака на SMS', group: 'SS7-атаки', desc: 'Ложный отчёт MAP-REPORT-SM-DELIVERY-STATUS блокирует приём SMS.', bg: '#f3e5e5', border: '#7f1d1d', color: '#3d0c0e' } },
+    // 3. Таксономия атак (Рубиново-терракотовая гамма)
+    { data: { id: 'T_PHISH', label: 'Фишинг / Спуфинг', group: '3. Таксономия атак', desc: 'Массовая рассылка писем, СМС и звонков якобы от имени легитимных компаний.', bg: '#fff1f2', border: '#e11d48', color: '#881337' } },
+    { data: { id: 'T_BEC', label: 'Компрометация деловой почты (BEC)', group: '3. Таксономия атак', desc: 'Подделка писем и контактов руководителей (CEO), юристов или риелторов для подмены реквизитов.', bg: '#fff1f2', border: '#e11d48', color: '#881337' } },
+    { data: { id: 'T_IMP', label: 'Имперсонация', group: '3. Таксономия атак', desc: 'Выдача себя за представителей госорганов, полицию, ФБР, страховщиков или техподдержку.', bg: '#fff1f2', border: '#e11d48', color: '#881337' } },
+    { data: { id: 'T_INV', label: 'Инвестиционный и фин. фрод', group: '3. Таксономия атак', desc: 'Вовлечение в фейковые криптобиржи, торговлю золотом, лжеброкеров и пирамиды под видом игр.', bg: '#fff1f2', border: '#e11d48', color: '#881337' } },
+    { data: { id: 'T_CB', label: 'Схема «Обратный звонок»', group: '3. Таксономия атак', desc: 'Звонок доставки → код SMS → фейк-робот → сообщение о взломе → жертва сама звонит мошенникам.', bg: '#fff1f2', border: '#e11d48', color: '#881337' } },
+    { data: { id: 'T_SS7', label: 'Сигнальные SMS-атаки (SS7)', group: '3. Таксономия атак', desc: 'Низкоуровневые атаки на протоколы сигнализации сотовых сетей (GSMA).', bg: '#ffe4e6', border: '#9f1239', color: '#881337' } },
+    { data: { id: 'SS7_FAKE', label: 'Faking (подмена узла/SMS-C)', group: '3. Сигнальные атаки SS7', desc: 'Подмена адреса SMS-центра, SCCP или MAP на уровне сигнализации.', bg: '#fff1f2', border: '#9f1239', color: '#881337' } },
+    { data: { id: 'SS7_SPOOF', label: 'Spoofing (подмена MSISDN)', group: '3. Сигнальные атаки SS7', desc: 'Подмена вызывающего номера телефона абонента при отправке исходящих SMS.', bg: '#fff1f2', border: '#9f1239', color: '#881337' } },
+    { data: { id: 'SS7_OPEN', label: 'Open SMS-C', group: '3. Сигнальные атаки SS7', desc: 'Отправка сообщений через сторонние незащищённые SMS-центры в обход домашнего оператора.', bg: '#fff1f2', border: '#9f1239', color: '#881337' } },
+    { data: { id: 'SS7_DOS', label: 'DoS-атака на SMS', group: '3. Сигнальные атаки SS7', desc: 'Ложный отчёт MAP-REPORT-SM-DELIVERY-STATUS блокирует приём обычных SMS абонентом.', bg: '#fff1f2', border: '#9f1239', color: '#881337' } },
 
-    // 4. Технические механизмы
-    { data: { id: 'TC_AI', label: 'Генеративный ИИ', group: 'Инструменты', desc: 'Персонализация диалогов, создание писем BEC и фейковых анкет.', bg: '#f5ebe0', border: '#bc6c25', color: '#3d230a' } },
-    { data: { id: 'TC_PHAAS', label: 'Phishing-as-a-Service (PhaaS)', group: 'Инструменты', desc: 'Готовая инфраструктура фишинговых доменов (например, LabHost).', bg: '#f5ebe0', border: '#bc6c25', color: '#3d230a' } },
-    { data: { id: 'TC_MAL', label: 'Вредоносное ПО и NFC-атаки', group: 'Инструменты', desc: 'Удалённый доступ к ДБО, сценарии NFC Gate и обратный NFC Gate.', bg: '#f5ebe0', border: '#bc6c25', color: '#3d230a' } },
-    { data: { id: 'TC_SIM', label: 'SIM Swap', group: 'Инструменты', desc: 'Перехват номера телефона и SMS-кодов у оператора связи.', bg: '#f5ebe0', border: '#bc6c25', color: '#3d230a' } },
-    { data: { id: 'TC_BOT', label: 'Ботнеты и зомби-узлы', group: 'Инструменты', desc: 'Захват уязвимых устройств третьих лиц для рассылки спама.', bg: '#f5ebe0', border: '#bc6c25', color: '#3d230a' } },
-    { data: { id: 'TC_REL', label: 'Открытые релеи (Open Relay)', group: 'Инструменты', desc: 'Серверы, ретранслирующие почту без аутентификации отправителя.', bg: '#f5ebe0', border: '#bc6c25', color: '#3d230a' } },
+    // 4. Технические механизмы (Янтарно-охристая гамма)
+    { data: { id: 'TC_AI', label: 'Генеративный ИИ', group: '4. Технические механизмы', desc: 'Массовая персонализация переписки в крипто- и романтических аферах, генерация писем BEC.', bg: '#fffbeb', border: '#d97706', color: '#78350f' } },
+    { data: { id: 'TC_PHAAS', label: 'Phishing-as-a-Service (PhaaS)', group: '4. Технические механизмы', desc: 'Готовая коммерческая инфраструктура фишинговых доменов и шаблонов (например, LabHost).', bg: '#fffbeb', border: '#d97706', color: '#78350f' } },
+    { data: { id: 'TC_MAL', label: 'Вредоносное ПО и NFC-атаки', group: '4. Технические механизмы', desc: 'Удалённый доступ к ДБО и перехват данных карт через ПО (NFC Gate / обратный NFC Gate).', bg: '#fffbeb', border: '#d97706', color: '#78350f' } },
+    { data: { id: 'TC_SIM', label: 'SIM Swap', group: '4. Технические механизмы', desc: 'Перехват номера телефона жертвы через социальную инженерию у оператора для получения SMS-кодов.', bg: '#fffbeb', border: '#d97706', color: '#78350f' } },
+    { data: { id: 'TC_BOT', label: 'Ботнеты и зомби-узлы', group: '4. Технические механизмы', desc: 'Захват уязвимых компьютеров и сетевых устройств третьих лиц для скрытой рассылки спама.', bg: '#fffbeb', border: '#d97706', color: '#78350f' } },
+    { data: { id: 'TC_REL', label: 'Открытые релеи (Open Relay)', group: '4. Технические механизмы', desc: 'Использование чужих почтовых серверов, ретранслирующих письма без аутентификации.', bg: '#fffbeb', border: '#d97706', color: '#78350f' } },
 
-    // 5. Цели
-    { data: { id: 'G_DATA', label: 'Кража учётных данных и SMS-кодов', group: 'Цели и жертвы', desc: 'Логины, пароли, одноразовые коды и доступ к госсервисам.', bg: '#f8edeb', border: '#b56576', color: '#3b1822' } },
-    { data: { id: 'G_FIN', label: 'Хищение средств (карты, счета, СБП, крипта)', group: 'Цели и жертвы', desc: 'Прямой вывод денежных средств со счетов и криптокошельков.', bg: '#f8edeb', border: '#b56576', color: '#3b1822' } },
-    { data: { id: 'G_SUB', label: 'Обманная подписка (Premium Short Codes)', group: 'Цели и жертвы', desc: 'Скрытое подключение платных услуг через короткие номера.', bg: '#f8edeb', border: '#b56576', color: '#3b1822' } },
-    { data: { id: 'G_INF', label: 'Заражение вирусами и DoS', group: 'Цели и жертвы', desc: 'Вредоносный код и нарушение доступности связи.', bg: '#f8edeb', border: '#b56576', color: '#3b1822' } },
-    { data: { id: 'G_VIC', label: 'Субъекты: физлица (60+), юрлица, CEO, операторы', group: 'Цели и жертвы', desc: 'Основные категории пострадавших от атак.', bg: '#f8edeb', border: '#b56576', color: '#3b1822' } },
+    // 5. Цели и объекты (Сливово-фиалковая гамма)
+    { data: { id: 'G_DATA', label: 'Кража учётных данных и SMS-кодов', group: '5. Цели и объекты воздействия', desc: 'Выманивание логинов, паролей, кодов подтверждения и доступа к госсервисам.', bg: '#faf5ff', border: '#9333ea', color: '#581c87' } },
+    { data: { id: 'G_FIN', label: 'Хищение средств (карты, счета, СБП, крипта)', group: '5. Цели и объекты воздействия', desc: 'Прямой вывод денег с банковских счетов, карт, электронных кошельков и в криптовалюту.', bg: '#faf5ff', border: '#9333ea', color: '#581c87' } },
+    { data: { id: 'G_SUB', label: 'Обманная подписка (Premium Short Codes)', group: '5. Цели и объекты воздействия', desc: 'Скрытое подключение платных услуг через короткие номера.', bg: '#faf5ff', border: '#9333ea', color: '#581c87' } },
+    { data: { id: 'G_INF', label: 'Заражение вирусами и DoS', group: '5. Цели и объекты воздействия', desc: 'Распространение вредоносного кода и нарушение доступности связи.', bg: '#faf5ff', border: '#9333ea', color: '#581c87' } },
+    { data: { id: 'G_VIC', label: 'Субъекты: физлица (60+), юрлица, CEO, операторы', group: '5. Цели и объекты воздействия', desc: 'Основные жертвы: граждане (особенно старше 60 лет), бизнес, топ-менеджмент и операторы связи.', bg: '#faf5ff', border: '#9333ea', color: '#581c87' } },
 
-    // 6. Защита
-    { data: { id: 'D_ITU', label: 'Иерархическая модель (ITU-T)', group: 'Меры защиты', desc: 'Защита на уровнях инфраструктуры, сервисов и приложений.', bg: '#e8f3ee', border: '#2d6a4f', color: '#1b4332' } },
-    { data: { id: 'D_INFRA', label: 'Инфраструктура: защита ОС, роли, логи, МЭ', group: 'Меры защиты', desc: 'Защита серверов, разграничение прав, аудит и резервирование.', bg: '#e8f3ee', border: '#2d6a4f', color: '#1b4332' } },
-    { data: { id: 'D_SERV', label: 'Сервисы: аутентификация, Flow Control', group: 'Меры защиты', desc: 'Строгая проверка личности, закрытие Open Relay, трассируемость.', bg: '#e8f3ee', border: '#2d6a4f', color: '#1b4332' } },
-    { data: { id: 'D_APP', label: 'Приложения: фильтрация и жалобы', group: 'Меры защиты', desc: 'Фильтрация по адресу/контенту, чёрные списки и платформы жалоб.', bg: '#e8f3ee', border: '#2d6a4f', color: '#1b4332' } },
-    { data: { id: 'D_GSMA', label: 'Защита сигнальных сетей (GSMA)', group: 'Меры защиты', desc: 'Контроль и фильтрация трафика в сетях ОКС-7.', bg: '#e8f3ee', border: '#2d6a4f', color: '#1b4332' } },
-    { data: { id: 'G_MON', label: 'Мониторинг: C7-зонды, MAP/SCCP, TAP-IN', group: 'Меры защиты', desc: 'Выявление аномалий в соотношении запросов SRI_For_SM и FSM.', bg: '#e8f3ee', border: '#2d6a4f', color: '#1b4332' } },
-    { data: { id: 'G_PREV', label: 'Блокировка: Screening, SMS Home Routing', group: 'Меры защиты', desc: 'Фильтрация на HLR/MSC, сокрытие IMSI и запрет BOICexHC.', bg: '#e8f3ee', border: '#2d6a4f', color: '#1b4332' } },
-    { data: { id: 'D_REG', label: 'Регуляторные меры (Центральный банк)', group: 'Меры защиты', desc: 'Финансовый и межведомственный антифрод-контур.', bg: '#e8f3ee', border: '#2d6a4f', color: '#1b4332' } },
-    { data: { id: 'R_ANTI', label: 'Антифрод по кредитам/банкоматам, дропперы', group: 'Меры защиты', desc: 'Обязательные проверки операций и база мошеннических реквизитов.', bg: '#e8f3ee', border: '#2d6a4f', color: '#1b4332' } },
-    { data: { id: 'R_TEL', label: 'Блокировка номеров и маркировка счетов', group: 'Меры защиты', desc: 'Взаимодействие ЦБ РФ, Минцифры и операторов связи.', bg: '#e8f3ee', border: '#2d6a4f', color: '#1b4332' } },
-    { data: { id: 'R_WEB', label: 'Разделегирование доменов и блокировки', group: 'Меры защиты', desc: 'Снятие доменов с делегирования и блокировки через Генпрокуратуру.', bg: '#e8f3ee', border: '#2d6a4f', color: '#1b4332' } },
-    { data: { id: 'R_UX', label: 'Сервис («кнопка») в приложениях банков', group: 'Меры защиты', desc: 'Оперативное заявление об операции без согласия и справка для полиции.', bg: '#e8f3ee', border: '#2d6a4f', color: '#1b4332' } },
+    // 6. Меры выявления и защиты (Изумрудно-шалфейная гамма)
+    { data: { id: 'D_ITU', label: 'Иерархическая модель (ITU-T)', group: '6. Меры выявления и защиты', desc: 'Трёхуровневая система защиты: инфраструктура, сервисы и приложения.', bg: '#f0fdf4', border: '#16a34a', color: '#14532d' } },
+    { data: { id: 'D_INFRA', label: 'Инфраструктура: защита ОС, роли, логи, МЭ', group: '6. Меры выявления и защиты', desc: 'Защита серверов и терминалов, разделение ролей управления, аудит логов и резервирование.', bg: '#f0fdf4', border: '#16a34a', color: '#14532d' } },
+    { data: { id: 'D_SERV', label: 'Сервисы: аутентификация, Flow Control', group: '6. Меры выявления и защиты', desc: 'Строгая аутентификация (Real Name), закрытие Open Relay, ограничение потока и трассируемость.', bg: '#f0fdf4', border: '#16a34a', color: '#14532d' } },
+    { data: { id: 'D_APP', label: 'Приложения: фильтрация и жалобы', group: '6. Меры выявления и защиты', desc: 'Фильтрация по адресу, контенту и чёрным/белым спискам, платформы обратной связи.', bg: '#f0fdf4', border: '#16a34a', color: '#14532d' } },
+    { data: { id: 'D_GSMA', label: 'Защита сигнальных сетей (GSMA)', group: '6. Меры выявления и защиты', desc: 'Мониторинг и активная блокировка атак в сетях ОКС-7.', bg: '#f0fdf4', border: '#16a34a', color: '#14532d' } },
+    { data: { id: 'G_MON', label: 'Мониторинг: C7-зонды, MAP/SCCP, TAP-IN', group: '6. Меры выявления и защиты', desc: 'Сверка адресов MAP/SCCP, контроль соотношения SRI_For_SM/FSM и роуминговых записей.', bg: '#f0fdf4', border: '#16a34a', color: '#14532d' } },
+    { data: { id: 'G_PREV', label: 'Блокировка: Screening, SMS Home Routing', group: '6. Меры выявления и защиты', desc: 'Фильтрация на HLR/MSC, сокрытие IMSI/геолокации и запрет BOICexHC.', bg: '#f0fdf4', border: '#16a34a', color: '#14532d' } },
+    { data: { id: 'D_REG', label: 'Регуляторные меры (Центральный банк)', group: '6. Меры выявления и защиты', desc: 'Банковский антифрод и межведомственное противодействие мошенничеству.', bg: '#f0fdf4', border: '#16a34a', color: '#14532d' } },
+    { data: { id: 'R_ANTI', label: 'Антифрод по кредитам/банкоматам, дропперы', group: '6. Меры выявления и защиты', desc: 'Обязательные проверки при выдаче кредитов и снятии наличных, база дропперов (ФЗ-161).', bg: '#f0fdf4', border: '#16a34a', color: '#14532d' } },
+    { data: { id: 'R_TEL', label: 'Блокировка номеров и маркировка счетов', group: '6. Меры выявления и защиты', desc: 'Блокировка мошеннических номеров с Минцифры/операторами и превентивная маркировка счетов.', bg: '#f0fdf4', border: '#16a34a', color: '#14532d' } },
+    { data: { id: 'R_WEB', label: 'Разделегирование доменов и блокировки', group: '6. Меры выявления и защиты', desc: 'Снятие фишинговых доменов с делегирования и ограничение доступа через Генпрокуратуру.', bg: '#f0fdf4', border: '#16a34a', color: '#14532d' } },
+    { data: { id: 'R_UX', label: 'Сервис («кнопка») в приложениях банков', group: '6. Меры выявления и защиты', desc: 'Мгновенное заявление об операции без согласия и электронная справка для полиции.', bg: '#f0fdf4', border: '#16a34a', color: '#14532d' } },
 
-    // Основные связи дерева
+    // Основные иерархические связи
     { data: { source: 'ROOT', target: 'CHAR', label: 'обладает' } },
     { data: { source: 'ROOT', target: 'CHAN', label: 'распространяется через' } },
     { data: { source: 'ROOT', target: 'TYPES', label: 'классифицируется как' } },
@@ -170,6 +237,8 @@
   const cy = cytoscape({
     container: document.getElementById('cy'),
     elements: elements,
+    autoungrabify: false, // Разрешает свободно двигать блоки мышкой
+    autounselectify: false,
     style: [
       {
         selector: 'node',
@@ -177,35 +246,39 @@
           'shape': 'round-rectangle',
           'background-color': 'data(bg)',
           'border-color': 'data(border)',
-          'border-width': 1.8,
+          'border-width': 2,
           'color': 'data(color)',
           'label': 'data(label)',
           'text-valign': 'center',
           'text-halign': 'center',
           'text-wrap': 'wrap',
-          'text-max-width': '160px',
+          'text-max-width': '165px',
           'font-family': 'Georgia, serif',
-          'font-size': '11px',
-          'padding': '10px',
+          'font-size': function(ele) { return ele.data('size') || '11px'; },
+          'padding': function(ele) { return ele.data('pad') || '10px'; },
           'width': 'label',
           'height': 'label',
-          'transition-property': 'opacity, border-width, border-color',
+          'shadow-blur': 10,
+          'shadow-color': 'rgba(15, 23, 42, 0.12)',
+          'shadow-offset-x': 0,
+          'shadow-offset-y': 3,
+          'transition-property': 'opacity, border-width, border-color, shadow-blur',
           'transition-duration': '0.2s'
         }
       },
       {
         selector: 'edge',
         style: {
-          'width': 1.5,
-          'line-color': '#8d99ae',
-          'target-arrow-color': '#8d99ae',
+          'width': 1.6,
+          'line-color': '#94a3b8',
+          'target-arrow-color': '#94a3b8',
           'target-arrow-shape': 'triangle',
           'curve-style': 'bezier',
           'label': 'data(label)',
-          'font-size': '9px',
-          'color': '#4a5568',
+          'font-size': '9.5px',
+          'color': '#334155',
           'text-background-color': '#faf8f5',
-          'text-background-opacity': 0.85,
+          'text-background-opacity': 0.9,
           'text-background-padding': '2px',
           'transition-property': 'opacity, line-color, width',
           'transition-duration': '0.2s'
@@ -215,30 +288,43 @@
         selector: 'edge[?cross]',
         style: {
           'line-style': 'dashed',
-          'line-color': '#b56576',
-          'target-arrow-color': '#b56576'
+          'line-dash-pattern': [6, 4],
+          'line-color': '#be185d',
+          'target-arrow-color': '#be185d',
+          'color': '#9d174d'
         }
       },
       {
         selector: '.dimmed',
-        style: { 'opacity': 0.15 }
+        style: {
+          'opacity': 0.14
+        }
       },
       {
-        selector: '.highlighted',
+        selector: 'node.highlighted',
         style: {
           'opacity': 1,
           'border-width': 3.5,
-          'border-color': '#d62828',
+          'border-color': '#ea580c',
+          'shadow-blur': 18,
+          'shadow-color': 'rgba(234, 88, 12, 0.45)',
           'z-index': 999
+        }
+      },
+      {
+        selector: 'node.active-center',
+        style: {
+          'border-width': 4.5,
+          'border-color': '#dc2626'
         }
       },
       {
         selector: 'edge.highlighted',
         style: {
           'opacity': 1,
-          'width': 3,
-          'line-color': '#d62828',
-          'target-arrow-color': '#d62828',
+          'width': 3.2,
+          'line-color': '#ea580c',
+          'target-arrow-color': '#ea580c',
           'z-index': 999
         }
       }
@@ -247,34 +333,35 @@
       name: 'breadthfirst',
       directed: true,
       roots: '#ROOT',
-      padding: 40,
-      spacingFactor: 1.25
+      padding: 45,
+      spacingFactor: 1.3
     }
   });
 
-  // Клик по узлу: подсветка соседей и вывод описания
-  cy.on('tap', 'node', function(evt) {
+  // Клик или захват узла: подсветка и вывод карточки
+  cy.on('tap dragstart', 'node', function(evt) {
     const node = evt.target;
     const neighborhood = node.closedNeighborhood();
 
-    cy.elements().addClass('dimmed').removeClass('highlighted');
+    cy.elements().addClass('dimmed').removeClass('highlighted active-center');
     neighborhood.removeClass('dimmed').addClass('highlighted');
+    node.addClass('active-center');
 
     document.getElementById('node-group').textContent = node.data('group');
     document.getElementById('node-title').textContent = node.data('label').replace(/\n/g, ' ');
     document.getElementById('node-desc').textContent = node.data('desc');
   });
 
-  // Клик по пустому месту: сброс
+  // Клик по пустому фону: сброс выделения
   cy.on('tap', function(evt) {
     if (evt.target === cy) resetView();
   });
 
   function resetView() {
-    cy.elements().removeClass('dimmed highlighted');
-    document.getElementById('node-group').textContent = 'Интерактивная онтология';
-    document.getElementById('node-title').textContent = 'Нажми на любой блок';
-    document.getElementById('node-desc').textContent = 'Кликни по элементу схемы, чтобы подсветить все связанные с ним каналы, атаки, инструменты и меры защиты. Пустое место — сброс выделения.';
+    cy.elements().removeClass('dimmed highlighted active-center');
+    document.getElementById('node-group').textContent = 'Онтология угроз и защиты';
+    document.getElementById('node-title').textContent = 'Фейковые сообщения и спам';
+    document.getElementById('node-desc').textContent = 'Нажми на любой блок, чтобы подсветить все его связи. Любой элемент можно перетащить мышкой в сторону для удобного просмотра — структура связей при этом не нарушится.';
   }
 </script>
 
